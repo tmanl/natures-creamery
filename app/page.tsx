@@ -1,677 +1,1774 @@
-'use client'
-import { useState, useEffect, useRef } from 'react'
-import Image from 'next/image'
-import Link from 'next/link'
+"use client";
 
-// ── Fallback product data (shown when Shopify isn't connected yet) ──────────
-const FALLBACK_PRODUCTS = [
+import { FormEvent, useEffect, useState } from "react";
+
+const marqueeItems = [
+  "Plant-Based",
+  "Clean Label",
+  "Made in Canada",
+  "Burcon Protein",
+  "No Eggs",
+  "No Gums",
+  "No Additives",
+  "Creamy Without Compromise",
+];
+
+const stats = [
+  { value: "100%", label: "Plant-Based" },
+  { value: "0", label: "Artificial Additives" },
+  { value: "4", label: "Signature Spreads" },
+  { value: "Milton,\nON", label: "Made in Canada" },
+];
+
+const products = [
   {
-    id: '1',
+    tag: "Bestseller",
     title: "Nature's Creamery Mayonnaise",
-    handle: 'mayonnaise',
-    description: 'Creamy, plant-based mayonnaise crafted without eggs, gums, or artificial additives. Rich texture, authentic flavour.',
-    priceRange: { minVariantPrice: { amount: '5.25', currencyCode: 'CAD' }, maxVariantPrice: { amount: '32.00', currencyCode: 'CAD' } },
-    tag: 'BESTSELLER',
-    emoji: '🫙',
-    sizes: ['354ml · $5.25', '500ml · $7.39', '4L · $32.00'],
-    checkoutUrl: 'https://natures-creamery.myshopify.com/collections/all',
+    desc:
+      "Creamy, plant-based mayo crafted without eggs, gums, or artificial additives. Rich texture, authentic flavour — ready for any occasion.",
+    sizes: [
+      "354ml Squeeze Bottle · $5.25",
+      "500ml Mason Jar · $7.39",
+      "4L Tub · $32.00",
+    ],
+    price: "$5.25",
+    visual: (
+      <img
+        src="/images/mayo-bottle.png"
+        alt="Nature's Creamery Mayonnaise bottle"
+        loading="lazy"
+      />
+    ),
   },
   {
-    id: '2',
-    title: 'Chipotle Mayo',
-    handle: 'chipotle-mayo',
-    description: 'Boldly flavorful with a smoky chipotle kick. Perfect for sandwiches, dips, and any time you crave a little heat.',
-    priceRange: { minVariantPrice: { amount: '5.69', currencyCode: 'CAD' }, maxVariantPrice: { amount: '32.00', currencyCode: 'CAD' } },
-    tag: 'SPICY',
-    emoji: '🌶️',
-    sizes: ['354ml · $5.69', '500ml · $8.00', '4L · $32.00'],
-    checkoutUrl: 'https://natures-creamery.myshopify.com/collections/all',
+    tag: "Spicy",
+    title: "Chipotle Mayo",
+    desc:
+      "Boldly flavourful with a smoky chipotle kick. Perfect for sandwiches, dips, and wraps when you want a little heat.",
+    sizes: [
+      "354ml Squeeze Bottle · $5.69",
+      "500ml Mason Jar · $8.00",
+      "4L Tub · $32.00",
+    ],
+    price: "$5.69",
+    visual: <div className="emoji-visual">🌶️</div>,
   },
   {
-    id: '3',
-    title: 'OliVida',
-    handle: 'olivida',
-    description: 'Crema della vita — a Mediterranean-inspired spread that transforms every board, sandwich, and salad into something special.',
-    priceRange: { minVariantPrice: { amount: '5.45', currencyCode: 'CAD' }, maxVariantPrice: { amount: '34.00', currencyCode: 'CAD' } },
-    tag: 'ARTISAN',
-    emoji: '🫒',
-    sizes: ['354ml · $5.45', '500ml · $7.79', '4L · $34.00'],
-    checkoutUrl: 'https://natures-creamery.myshopify.com/collections/all',
+    tag: "Artisan",
+    title: "OliVida",
+    desc:
+      "A smooth and savoury olive-forward spread designed for grazing boards, elevated sandwiches, and everyday indulgence.",
+    sizes: ["500ml Mason Jar · $8.99", "4L Tub · $34.00"],
+    price: "$8.99",
+    visual: <div className="emoji-visual">🫒</div>,
   },
   {
-    id: '4',
-    title: 'CocoVida',
-    handle: 'cocovida',
-    description: 'Indulgence without compromise. A rich, creamy chocolate spread made for those who love flavour and read labels.',
-    priceRange: { minVariantPrice: { amount: '7.00', currencyCode: 'CAD' }, maxVariantPrice: { amount: '14.00', currencyCode: 'CAD' } },
-    tag: 'NEW',
-    emoji: '🍫',
-    sizes: ['250ml · $7.00', '500ml · $14.00'],
-    checkoutUrl: 'https://natures-creamery.myshopify.com/collections/all',
+    tag: "Fresh",
+    title: "Tzatziki",
+    desc:
+      "Cool, creamy, and herbaceous with a plant-based twist. A refreshing spread and dip for wraps, bowls, and platters.",
+    sizes: ["500ml Mason Jar · $8.99", "4L Tub · $34.00"],
+    price: "$8.99",
+    visual: <div className="emoji-visual">🥒</div>,
   },
-]
+];
 
-// ── Scroll animation hook ────────────────────────────────────────────────────
-function useScrollAnimation() {
-  const ref = useRef<HTMLDivElement>(null)
-  const [visible, setVisible] = useState(false)
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const obs = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) { setVisible(true); obs.disconnect() }
-    }, { threshold: 0.15 })
-    obs.observe(el)
-    return () => obs.disconnect()
-  }, [])
-  return { ref, visible }
+const aboutPills = [
+  {
+    icon: "🌱",
+    label: "Plant-Based & Creamy",
+    sub: "Never compromise on texture",
+  },
+  {
+    icon: "💪",
+    label: "Protein-Enhanced",
+    sub: "Innovative Burcon blends",
+  },
+  {
+    icon: "🍞",
+    label: "Incredibly Versatile",
+    sub: "Toast, boards, baking & more",
+  },
+  {
+    icon: "📋",
+    label: "Clean Label",
+    sub: "No gums, no additives",
+  },
+];
+
+const storySteps = [
+  {
+    num: "01",
+    title: "Source",
+    body:
+      "We start with Burcon's pure pea and canola protein isolates — clean plant-based emulsifiers harvested responsibly in Canada.",
+  },
+  {
+    num: "02",
+    title: "Craft",
+    body:
+      "Each spread is blended for the exact texture and richness people expect from traditional mayo, without artificial shortcuts.",
+  },
+  {
+    num: "03",
+    title: "Deliver",
+    body:
+      "Bottled fresh in Milton, Ontario and ready for your fridge, kitchen, or food-service setup.",
+  },
+];
+
+const showcasePoints = [
+  "No eggs, no gums, no artificial additives — just clean, honest ingredients",
+  "Rich, creamy texture powered by Burcon's Peazazz® C and Puratein® C proteins",
+  "Allergen-friendly, preservative-free, and suitable for plant-based lifestyles",
+  "Available in 354ml, 500ml mason jar, and 4L bulk sizes",
+];
+
+const styles = String.raw`
+@import url("https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=DM+Mono:wght@400;500&family=Outfit:wght@300;400;500;600&display=swap");
+
+:root {
+  --cream: #f7f2e8;
+  --cream-2: #ede5d0;
+  --cream-3: #e2d8c0;
+  --forest: #1e3a2f;
+  --forest-2: #2d5140;
+  --sage: #6b8f71;
+  --gold: #b8933a;
+  --gold-lt: #d4ad59;
+  --earth: #5c3d1e;
+  --charcoal: #141414;
+  --white: #fdfaf5;
+  --text: #1e2820;
+
+  --f-display: "Cormorant Garamond", Georgia, serif;
+  --f-body: "Outfit", system-ui, sans-serif;
+  --f-mono: "DM Mono", monospace;
+
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-function AnimatedSection({ children, className = '', delay = 0 }: { children: React.ReactNode; className?: string; delay?: number }) {
-  const { ref, visible } = useScrollAnimation()
-  return (
-    <div
-      ref={ref}
-      className={className}
-      style={{
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(40px)',
-        transition: `opacity 0.9s ease ${delay}ms, transform 0.9s ease ${delay}ms`,
-      }}
-    >
-      {children}
-    </div>
-  )
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
-// ── Navbar ───────────────────────────────────────────────────────────────────
-function Navbar() {
-  const [scrolled, setScrolled] = useState(false)
-  const [menuOpen, setMenuOpen] = useState(false)
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--cream);
+  color: var(--text);
+  font-family: var(--f-body);
+  line-height: 1.6;
+  overflow-x: hidden;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: 16px;
+  z-index: 9999;
+  background: var(--forest);
+  color: var(--cream);
+  padding: 10px 20px;
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: 0.05em;
+  transition: top 0.2s;
+}
+
+.skip-link:focus {
+  top: 16px;
+}
+
+#nav {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 1000;
+  height: 72px;
+  padding: 0 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  transition: background 0.4s var(--ease-in-out), box-shadow 0.4s var(--ease-in-out);
+}
+
+#nav.scrolled {
+  background: rgba(247, 242, 232, 0.92);
+  backdrop-filter: blur(14px);
+  box-shadow: 0 1px 0 rgba(30, 58, 47, 0.08);
+}
+
+.nav-logo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.nav-logo-name {
+  font-family: var(--f-display);
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--forest);
+  line-height: 1;
+}
+
+.nav-logo-tag {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  text-transform: uppercase;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 36px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-links a {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: var(--forest);
+  opacity: 0.75;
+  position: relative;
+  padding-bottom: 2px;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 0;
+  height: 1px;
+  background: var(--gold);
+  transition: width 0.3s var(--ease-out-expo);
+}
+
+.nav-links a:hover,
+.nav-links a:focus-visible {
+  opacity: 1;
+}
+
+.nav-links a:hover::after,
+.nav-links a:focus-visible::after {
+  width: 100%;
+}
+
+.nav-cta,
+.btn-primary,
+.pc-cta,
+.form-btn,
+.footer-shop-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: none;
+  background: var(--forest);
+  color: var(--cream);
+  padding: 13px 24px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  transition: background 0.25s, transform 0.2s, color 0.25s, box-shadow 0.25s;
+}
+
+.nav-cta:hover,
+.btn-primary:hover,
+.pc-cta:hover,
+.form-btn:hover,
+.footer-shop-btn:hover,
+.nav-cta:focus-visible,
+.btn-primary:focus-visible,
+.pc-cta:focus-visible,
+.form-btn:focus-visible,
+.footer-shop-btn:focus-visible {
+  background: var(--gold);
+  color: var(--charcoal);
+  transform: translateY(-2px);
+  box-shadow: 0 12px 24px rgba(184, 147, 58, 0.2);
+}
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(30, 58, 47, 0.25);
+  color: var(--forest);
+  padding: 13px 24px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: transparent;
+}
+
+.btn-ghost:hover,
+.btn-ghost:focus-visible {
+  border-color: var(--forest);
+  background: rgba(30, 58, 47, 0.04);
+}
+
+.hamburger {
+  display: none;
+  width: 28px;
+  padding: 4px;
+  background: transparent;
+  border: none;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.hamburger span {
+  display: block;
+  height: 2px;
+  background: var(--forest);
+  transition: transform 0.3s var(--ease-out-expo), opacity 0.2s;
+}
+
+.hamburger.open span:nth-child(1) {
+  transform: rotate(45deg) translate(5px, 5px);
+}
+.hamburger.open span:nth-child(2) {
+  opacity: 0;
+}
+.hamburger.open span:nth-child(3) {
+  transform: rotate(-45deg) translate(5px, -5px);
+}
+
+.mobile-menu {
+  position: fixed;
+  inset: 72px 0 0;
+  background: var(--cream);
+  z-index: 950;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 40px 48px;
+  transform: translateY(-20px);
+  opacity: 0;
+  pointer-events: none;
+  transition: transform 0.35s var(--ease-out-expo), opacity 0.25s;
+}
+
+.mobile-menu.open {
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.mobile-menu a {
+  font-family: var(--f-display);
+  font-size: 32px;
+  font-weight: 400;
+  color: var(--forest);
+  border-bottom: 1px solid var(--cream-3);
+  padding-bottom: 18px;
+}
+
+main {
+  display: block;
+}
+
+#hero {
+  min-height: 100svh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: center;
+  gap: 48px;
+  padding: 100px 48px 60px;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--cream) 0%, var(--cream-2) 60%, var(--cream-3) 100%);
+}
+
+.hero-bg-circle,
+.hero-bg-blob {
+  position: absolute;
+  pointer-events: none;
+  border-radius: 50%;
+}
+
+.hero-bg-circle-1 {
+  width: 700px;
+  height: 700px;
+  top: -200px;
+  right: -150px;
+  border: 1px solid rgba(30, 58, 47, 0.06);
+}
+
+.hero-bg-circle-2 {
+  width: 500px;
+  height: 500px;
+  top: -100px;
+  right: -50px;
+  border: 1px solid rgba(184, 147, 58, 0.08);
+}
+
+.hero-bg-blob {
+  width: 600px;
+  height: 600px;
+  bottom: -100px;
+  left: -200px;
+  background: rgba(30, 58, 47, 0.04);
+}
+
+.hero-left,
+.hero-right {
+  position: relative;
+  z-index: 2;
+}
+
+.hero-eyebrow,
+.section-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.hero-eyebrow-line,
+.eyebrow-line {
+  width: 40px;
+  height: 1px;
+  background: var(--gold);
+}
+
+.hero-eyebrow-text,
+.eyebrow-text {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: var(--gold);
+}
+
+.hero-title {
+  margin: 0 0 24px;
+  font-family: var(--f-display);
+  font-size: clamp(48px, 6vw, 82px);
+  line-height: 1.05;
+  font-weight: 400;
+  color: var(--forest);
+}
+
+.hero-title em,
+.section-title em,
+.about-title em,
+.contact-title em {
+  color: var(--gold);
+  font-style: italic;
+}
+
+.hero-desc {
+  max-width: 460px;
+  margin: 0 0 40px;
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 1.75;
+  color: var(--earth);
+}
+
+.hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-bottom: 40px;
+}
+
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 18px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.hero-badge {
+  font-size: 13px;
+  color: rgba(30, 58, 47, 0.65);
+}
+
+.hero-right {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.hero-img-wrap {
+  position: relative;
+  animation: floatY 6s ease-in-out infinite;
+}
+
+.hero-img-wrap img {
+  max-height: 600px;
+  object-fit: contain;
+  filter: drop-shadow(0 40px 60px rgba(30, 58, 47, 0.18));
+}
+
+.hero-price-badge {
+  position: absolute;
+  left: -20px;
+  bottom: 0;
+  background: var(--forest);
+  color: var(--cream);
+  padding: 16px 24px;
+  box-shadow: 0 20px 40px rgba(30, 58, 47, 0.25);
+}
+
+.hero-price-badge .from,
+.pc-from {
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(247, 242, 232, 0.6);
+}
+
+.hero-price-badge .price,
+.pc-price {
+  font-family: var(--f-display);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.hero-price-badge .currency {
+  margin-top: 4px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  letter-spacing: 0.2em;
+  color: var(--gold-lt);
+  text-transform: uppercase;
+}
+
+.marquee-bar {
+  overflow: hidden;
+  background: var(--forest);
+  padding: 14px 0;
+}
+
+.marquee-track {
+  display: flex;
+  white-space: nowrap;
+  animation: marquee 28s linear infinite;
+}
+
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 28px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(247, 242, 232, 0.72);
+}
+
+.marquee-dot {
+  color: var(--gold);
+}
+
+#stats,
+.section-shell,
+.story-inner,
+.showcase-inner,
+.contact-inner,
+.footer-inner {
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+#stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  padding: 44px 48px;
+}
+
+.stat-item {
+  background: rgba(253, 250, 245, 0.65);
+  border: 1px solid rgba(30, 58, 47, 0.08);
+  padding: 26px;
+  text-align: center;
+  backdrop-filter: blur(10px);
+}
+
+.stat-value {
+  white-space: pre-line;
+  font-family: var(--f-display);
+  font-size: 44px;
+  line-height: 1.15;
+  color: var(--forest);
+  margin-bottom: 8px;
+}
+
+.stat-label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(30, 58, 47, 0.7);
+}
+
+#products,
+#about,
+#story,
+#showcase,
+#contact {
+  padding: 110px 48px;
+}
+
+.section-header {
+  max-width: 760px;
+  margin: 0 auto 56px;
+  text-align: center;
+}
+
+.section-title,
+.about-title,
+.contact-title {
+  margin: 0 0 18px;
+  font-family: var(--f-display);
+  font-size: clamp(40px, 4.6vw, 64px);
+  font-weight: 400;
+  line-height: 1.05;
+  color: var(--forest);
+}
+
+.section-desc,
+.about-text,
+.contact-desc,
+.step-body,
+.pc-desc {
+  color: var(--earth);
+}
+
+.section-desc {
+  margin: 0 auto;
+  max-width: 640px;
+  font-size: 17px;
+  font-weight: 300;
+  line-height: 1.8;
+}
+
+.products-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+}
+
+.product-card {
+  overflow: hidden;
+  border: 1px solid rgba(30, 58, 47, 0.08);
+  background: rgba(253, 250, 245, 0.72);
+  box-shadow: 0 18px 40px rgba(30, 58, 47, 0.06);
+}
+
+.pc-visual {
+  min-height: 280px;
+  display: grid;
+  place-items: center;
+  padding: 32px;
+  background: linear-gradient(180deg, rgba(247, 242, 232, 0.3), rgba(226, 216, 192, 0.35));
+}
+
+.pc-visual img {
+  max-height: 240px;
+  object-fit: contain;
+}
+
+.emoji-visual {
+  font-size: 90px;
+  line-height: 1;
+}
+
+.pc-inner {
+  padding: 28px;
+}
+
+.pc-tag {
+  display: inline-flex;
+  margin-bottom: 14px;
+  padding: 6px 10px;
+  background: rgba(184, 147, 58, 0.12);
+  color: var(--gold);
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.pc-title {
+  margin: 0 0 12px;
+  font-family: var(--f-display);
+  font-size: 34px;
+  line-height: 1.1;
+  font-weight: 500;
+  color: var(--forest);
+}
+
+.pc-desc {
+  margin: 0 0 18px;
+  font-size: 16px;
+  line-height: 1.75;
+}
+
+.pc-sizes {
+  padding-left: 18px;
+  margin: 0 0 24px;
+  color: var(--forest-2);
+}
+
+.pc-sizes li + li {
+  margin-top: 8px;
+}
+
+.pc-footer {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-top: 24px;
+}
+
+.pc-price {
+  color: var(--forest);
+  font-size: 34px;
+}
+
+#about {
+  background: linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(253,250,245,0.5) 100%);
+}
+
+.about-grid,
+.showcase-inner,
+.contact-inner {
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  gap: 48px;
+  align-items: center;
+}
+
+.about-img-wrap {
+  position: relative;
+}
+
+.about-img-frame {
+  overflow: hidden;
+  background: rgba(253, 250, 245, 0.8);
+  border: 1px solid rgba(30, 58, 47, 0.08);
+  box-shadow: 0 18px 40px rgba(30, 58, 47, 0.08);
+}
+
+.about-img-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.about-img-decoration {
+  position: absolute;
+  right: -18px;
+  bottom: -18px;
+  width: 140px;
+  height: 140px;
+  border: 1px solid rgba(184, 147, 58, 0.25);
+  background: rgba(184, 147, 58, 0.05);
+}
+
+.about-text {
+  margin: 0 0 18px;
+  font-size: 16px;
+  line-height: 1.85;
+}
+
+.about-pills {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.about-pill {
+  border: 1px solid rgba(30, 58, 47, 0.08);
+  background: rgba(253, 250, 245, 0.7);
+  padding: 20px;
+}
+
+.about-pill-icon {
+  font-size: 24px;
+  margin-bottom: 12px;
+}
+
+.about-pill-label {
+  color: var(--forest);
+  font-weight: 500;
+  margin-bottom: 4px;
+}
+
+.about-pill-sub {
+  color: rgba(30, 58, 47, 0.7);
+  font-size: 14px;
+}
+
+#story {
+  background: var(--forest);
+  color: var(--cream);
+}
+
+#story .section-title,
+#story .step-title,
+#story .step-num {
+  color: var(--cream);
+}
+
+#story .section-desc,
+#story .step-body,
+#story .eyebrow-text {
+  color: rgba(247, 242, 232, 0.8);
+}
+
+#story .eyebrow-line {
+  background: rgba(212, 173, 89, 0.75);
+}
+
+.story-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 24px;
+}
+
+.story-step {
+  padding: 28px;
+  border: 1px solid rgba(247, 242, 232, 0.12);
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.step-num {
+  margin-bottom: 14px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: 0.2em;
+  color: var(--gold-lt);
+}
+
+.step-title {
+  margin: 0 0 10px;
+  font-family: var(--f-display);
+  font-size: 32px;
+  font-weight: 500;
+}
+
+.step-body {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.showcase-img {
+  overflow: hidden;
+  border: 1px solid rgba(30, 58, 47, 0.08);
+  background: rgba(253, 250, 245, 0.78);
+  box-shadow: 0 18px 40px rgba(30, 58, 47, 0.06);
+}
+
+.showcase-points {
+  list-style: none;
+  padding: 0;
+  margin: 24px 0 32px;
+  display: grid;
+  gap: 16px;
+}
+
+.showcase-point {
+  display: flex;
+  gap: 14px;
+  align-items: start;
+}
+
+.sp-dot {
+  width: 10px;
+  height: 10px;
+  margin-top: 8px;
+  border-radius: 999px;
+  background: var(--gold);
+  flex-shrink: 0;
+}
+
+.sp-text {
+  color: var(--earth);
+  line-height: 1.75;
+}
+
+.contact-left {
+  padding-right: 16px;
+}
+
+.contact-info {
+  display: grid;
+  gap: 18px;
+  margin-top: 28px;
+}
+
+.ci-item {
+  display: flex;
+  gap: 16px;
+  align-items: start;
+}
+
+.ci-icon {
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  background: rgba(184, 147, 58, 0.1);
+  font-size: 18px;
+}
+
+.ci-label {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(30, 58, 47, 0.6);
+  margin-bottom: 4px;
+}
+
+.ci-value {
+  color: var(--forest);
+  line-height: 1.7;
+}
+
+.contact-form {
+  border: 1px solid rgba(30, 58, 47, 0.08);
+  background: rgba(253, 250, 245, 0.72);
+  box-shadow: 0 18px 40px rgba(30, 58, 47, 0.06);
+  padding: 28px;
+}
+
+.form-grid {
+  display: grid;
+  gap: 18px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 8px;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(30, 58, 47, 0.7);
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 16px;
+  border: 1px solid rgba(30, 58, 47, 0.14);
+  background: rgba(255, 255, 255, 0.75);
+  color: var(--forest);
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--gold);
+}
+
+.form-error {
+  color: #b3261e;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+.form-success {
+  margin-top: 18px;
+  padding: 18px;
+  background: rgba(107, 143, 113, 0.1);
+  border: 1px solid rgba(107, 143, 113, 0.2);
+  color: var(--forest);
+}
+
+footer {
+  background: var(--forest);
+  color: rgba(247, 242, 232, 0.78);
+  padding: 36px 48px;
+}
+
+.footer-top,
+.footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+
+.footer-top {
+  padding-bottom: 28px;
+  border-bottom: 1px solid rgba(247, 242, 232, 0.1);
+}
+
+.footer-bottom {
+  padding-top: 24px;
+}
+
+.footer-brand-name {
+  color: var(--cream);
+  font-family: var(--f-display);
+  font-size: 32px;
+  line-height: 1;
+}
+
+.footer-brand-tag {
+  font-family: var(--f-mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--gold-lt);
+  margin-top: 8px;
+}
+
+.footer-nav {
+  display: flex;
+  gap: 24px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.footer-nav a:hover,
+.footer-nav a:focus-visible {
+  color: var(--cream);
+}
+
+.footer-copy {
+  margin: 0;
+  font-size: 14px;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.8s var(--ease-out-expo), transform 0.8s var(--ease-out-expo);
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+
+@keyframes floatY {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@media (max-width: 1080px) {
+  .nav-links,
+  .nav-cta {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  #hero,
+  .about-grid,
+  .showcase-inner,
+  .contact-inner,
+  .story-steps,
+  .products-grid,
+  #stats {
+    grid-template-columns: 1fr;
+  }
+
+  #hero,
+  #products,
+  #about,
+  #story,
+  #showcase,
+  #contact,
+  footer,
+  #stats {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+
+  #hero {
+    padding-top: 120px;
+  }
+
+  .hero-right {
+    order: -1;
+  }
+
+  .hero-img-wrap img {
+    max-height: 420px;
+  }
+
+  .about-pills {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-top,
+  .footer-bottom {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .footer-nav {
+    flex-wrap: wrap;
+  }
+}
+
+@media (max-width: 680px) {
+  #nav {
+    padding: 0 20px;
+  }
+
+  .mobile-menu {
+    padding: 28px 20px;
+  }
+
+  #hero,
+  #products,
+  #about,
+  #story,
+  #showcase,
+  #contact,
+  footer,
+  #stats {
+    padding-left: 20px;
+    padding-right: 20px;
+  }
+
+  .pc-footer {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .hero-actions {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+`;
+
+export default function Page() {
+  const [scrolled, setScrolled] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [formError, setFormError] = useState("");
+  const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
-    const handler = () => setScrolled(window.scrollY > 40)
-    window.addEventListener('scroll', handler)
-    return () => window.removeEventListener('scroll', handler)
-  }, [])
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) entry.target.classList.add("visible");
+        });
+      },
+      { threshold: 0.12 }
+    );
+
+    const revealEls = document.querySelectorAll(".reveal");
+    revealEls.forEach((el) => observer.observe(el));
+
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setMenuOpen(false);
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      document.removeEventListener("keydown", onKeyDown);
+      observer.disconnect();
+    };
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setFormError("");
+
+    const form = event.currentTarget;
+    const data = new FormData(form);
+
+    const name = String(data.get("name") || "").trim();
+    const email = String(data.get("email") || "").trim();
+    const subject = String(data.get("subject") || "").trim() || "Website Enquiry";
+    const message = String(data.get("message") || "").trim();
+
+    if (!name) {
+      setFormError("Please enter your name.");
+      return;
+    }
+
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRe.test(email)) {
+      setFormError("Please enter a valid email address.");
+      return;
+    }
+
+    if (!message) {
+      setFormError("Please enter a message.");
+      return;
+    }
+
+    const body = `Name: ${name}
+Email: ${email}
+
+${message}`;
+
+    window.location.href = `mailto:hello@naturescreamery.com?subject=${encodeURIComponent(
+      subject
+    )}&body=${encodeURIComponent(body)}`;
+
+    setSubmitted(true);
+    form.reset();
+  };
 
   return (
-    <nav className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-      scrolled ? 'bg-[#F5F0E8]/95 backdrop-blur-md shadow-sm py-3' : 'bg-transparent py-6'
-    }`}>
-      <div className="max-w-7xl mx-auto px-6 flex items-center justify-between">
-        {/* Logo */}
-        <div className="flex flex-col leading-none">
-          <span style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#2D4A3E] text-xl font-700 tracking-wide">
-            Nature&apos;s Creamery
-          </span>
-          <span className="text-[#C9A84C] text-xs tracking-[0.25em] font-light" style={{ fontFamily: "'DM Mono', monospace" }}>
-            CREAMY WITHOUT COMPROMISE
-          </span>
-        </div>
+    <>
+      <style jsx global>{styles}</style>
 
-        {/* Desktop nav */}
-        <div className="hidden md:flex items-center gap-8">
-          {[['#products', 'Products'], ['#about', 'About'], ['#story', 'Our Story'], ['#contact', 'Contact']].map(([href, label]) => (
-            <a key={href} href={href} className="nav-link text-[#2D4A3E] text-sm tracking-wider hover:text-[#C9A84C] transition-colors" style={{ fontFamily: "'DM Mono', monospace" }}>
-              {label}
-            </a>
-          ))}
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+
+      <header>
+        <nav id="nav" className={scrolled ? "scrolled" : ""} aria-label="Main navigation">
+          <a href="#hero" className="nav-logo" aria-label="Nature's Creamery home">
+            <span className="nav-logo-name">Nature&apos;s Creamery</span>
+            <span className="nav-logo-tag">Creamy Without Compromise</span>
+          </a>
+
+          <ul className="nav-links">
+            <li><a href="#products">Products</a></li>
+            <li><a href="#about">About</a></li>
+            <li><a href="#story">Our Story</a></li>
+            <li><a href="#contact">Contact</a></li>
+          </ul>
+
           <a
             href="https://natures-creamery.myshopify.com/collections/all"
             target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[#2D4A3E] text-[#F5F0E8] px-5 py-2.5 text-sm tracking-widest hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all duration-300"
-            style={{ fontFamily: "'DM Mono', monospace" }}
+            rel="noreferrer"
+            className="nav-cta"
           >
-            SHOP NOW
+            Shop Now
           </a>
-        </div>
 
-        {/* Mobile menu toggle */}
-        <button
-          className="md:hidden flex flex-col gap-1.5 p-2"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
+          <button
+            className={`hamburger ${menuOpen ? "open" : ""}`}
+            aria-label="Toggle navigation menu"
+            aria-expanded={menuOpen}
+            aria-controls="mobile-menu"
+            onClick={() => setMenuOpen((v) => !v)}
+          >
+            <span />
+            <span />
+            <span />
+          </button>
+        </nav>
+      </header>
+
+      <div id="mobile-menu" className={`mobile-menu ${menuOpen ? "open" : ""}`}>
+        <a href="#products" onClick={() => setMenuOpen(false)}>Products</a>
+        <a href="#about" onClick={() => setMenuOpen(false)}>About</a>
+        <a href="#story" onClick={() => setMenuOpen(false)}>Our Story</a>
+        <a href="#contact" onClick={() => setMenuOpen(false)}>Contact</a>
+        <a
+          href="https://natures-creamery.myshopify.com/collections/all"
+          target="_blank"
+          rel="noreferrer"
+          className="btn-primary"
+          style={{ marginTop: 8, alignSelf: "flex-start" }}
         >
-          <span className={`block w-6 h-0.5 bg-[#2D4A3E] transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-          <span className={`block w-6 h-0.5 bg-[#2D4A3E] transition-all duration-300 ${menuOpen ? 'opacity-0' : ''}`} />
-          <span className={`block w-6 h-0.5 bg-[#2D4A3E] transition-all duration-300 ${menuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-        </button>
+          Shop Now →
+        </a>
       </div>
 
-      {/* Mobile menu */}
-      {menuOpen && (
-        <div className="md:hidden bg-[#F5F0E8] border-t border-[#2D4A3E]/10 px-6 py-6 flex flex-col gap-4">
-          {[['#products', 'Products'], ['#about', 'About'], ['#story', 'Our Story'], ['#contact', 'Contact']].map(([href, label]) => (
-            <a key={href} href={href} onClick={() => setMenuOpen(false)} className="text-[#2D4A3E] text-sm tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
-              {label}
-            </a>
-          ))}
-          <a href="https://natures-creamery.myshopify.com/collections/all" target="_blank" rel="noopener noreferrer" className="bg-[#2D4A3E] text-[#F5F0E8] px-5 py-3 text-sm tracking-widest text-center" style={{ fontFamily: "'DM Mono', monospace" }}>
-            SHOP NOW
-          </a>
-        </div>
-      )}
-    </nav>
-  )
-}
+      <main id="main-content">
+        <section id="hero" aria-label="Nature's Creamery hero">
+          <div className="hero-bg-circle hero-bg-circle-1" aria-hidden="true" />
+          <div className="hero-bg-circle hero-bg-circle-2" aria-hidden="true" />
+          <div className="hero-bg-blob" aria-hidden="true" />
 
-// ── Hero Section ─────────────────────────────────────────────────────────────
-function Hero() {
-  return (
-    <section className="relative min-h-screen flex items-center overflow-hidden" style={{ background: 'linear-gradient(160deg, #F5F0E8 0%, #EBE3D0 50%, #E0D5BE 100%)' }}>
-      {/* Decorative botanical circles */}
-      <div className="absolute top-20 right-[-5%] w-[500px] h-[500px] rounded-full border border-[#2D4A3E]/10 pointer-events-none" />
-      <div className="absolute top-32 right-[5%] w-[380px] h-[380px] rounded-full border border-[#C9A84C]/15 pointer-events-none" />
-      <div className="absolute bottom-[-10%] left-[-8%] w-[600px] h-[600px] rounded-full bg-[#2D4A3E]/5 pointer-events-none" />
+          <div className="hero-left">
+            <div className="hero-eyebrow">
+              <div className="hero-eyebrow-line" />
+              <span className="hero-eyebrow-text">Indulgence Without Compromise</span>
+            </div>
 
-      <div className="max-w-7xl mx-auto px-6 pt-32 pb-20 grid lg:grid-cols-2 gap-16 items-center w-full">
-        {/* Left content */}
-        <div>
-          <div className="inline-flex items-center gap-3 mb-8">
-            <div className="h-px w-12 bg-[#C9A84C]" />
-            <span className="text-[#C9A84C] text-xs tracking-[0.3em]" style={{ fontFamily: "'DM Mono', monospace" }}>
-              INDULGENCE WITHOUT COMPROMISE
-            </span>
-          </div>
-          <h1 style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#2D4A3E] text-5xl md:text-7xl font-800 leading-tight mb-6">
-            Creamy,<br />
-            <em className="italic text-[#C9A84C]">plant-based</em><br />
-            perfection.
-          </h1>
-          <p className="text-[#6B4E35] text-lg leading-relaxed max-w-md mb-10" style={{ fontFamily: "'Lato', sans-serif" }}>
-            Crafted in Milton, Ontario with Burcon&apos;s revolutionary pea and canola protein isolates. Real flavour. Clean labels. Nothing hidden.
-          </p>
-          <div className="flex flex-wrap gap-4">
-            <a
-              href="https://natures-creamery.myshopify.com/collections/all"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-3 bg-[#2D4A3E] text-[#F5F0E8] px-8 py-4 text-sm tracking-widest hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all duration-400 group"
-              style={{ fontFamily: "'DM Mono', monospace" }}
-            >
-              SHOP SPREADS
-              <span className="group-hover:translate-x-1 transition-transform duration-300">→</span>
-            </a>
-            <a
-              href="#about"
-              className="inline-flex items-center gap-3 border border-[#2D4A3E]/30 text-[#2D4A3E] px-8 py-4 text-sm tracking-widest hover:border-[#2D4A3E] transition-all duration-300"
-              style={{ fontFamily: "'DM Mono', monospace" }}
-            >
-              OUR STORY
-            </a>
+            <h1 className="hero-title">
+              Creamy,
+              <br />
+              <em>plant-based</em>
+              <br />
+              perfection.
+            </h1>
+
+            <p className="hero-desc">
+              Crafted in Milton, Ontario with Burcon&apos;s revolutionary pea and
+              canola protein isolates. Real flavour. Clean labels. Nothing hidden.
+            </p>
+
+            <div className="hero-actions">
+              <a
+                href="https://natures-creamery.myshopify.com/collections/all"
+                target="_blank"
+                rel="noreferrer"
+                className="btn-primary"
+              >
+                Shop Spreads <span aria-hidden="true">→</span>
+              </a>
+              <a href="#about" className="btn-ghost">
+                Our Story
+              </a>
+            </div>
+
+            <ul className="hero-badges">
+              <li className="hero-badge">🌱 Plant-Based</li>
+              <li className="hero-badge">🇨🇦 Made in Canada</li>
+              <li className="hero-badge">✨ Clean Label</li>
+              <li className="hero-badge">💪 Protein-Enhanced</li>
+            </ul>
           </div>
 
-          {/* Trust badges */}
-          <div className="mt-12 flex flex-wrap gap-6">
-            {['🌱 Plant-Based', '🇨🇦 Made in Canada', '✨ Clean Label', '💪 Protein-Enhanced'].map(badge => (
-              <span key={badge} className="text-[#2D4A3E]/70 text-sm" style={{ fontFamily: "'Lato', sans-serif" }}>
-                {badge}
+          <div className="hero-right">
+            <div className="hero-img-wrap">
+              <img src="/images/hero-bottle.png" alt="Nature's Creamery hero bottle" />
+              <div className="hero-price-badge">
+                <div className="from">From</div>
+                <div className="price">$5.25</div>
+                <div className="currency">CAD</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <div className="marquee-bar" aria-hidden="true">
+          <div className="marquee-track">
+            {[...marqueeItems, ...marqueeItems].map((item, index) => (
+              <span className="marquee-item" key={`${item}-${index}`}>
+                {item} <span className="marquee-dot">◆</span>
               </span>
             ))}
           </div>
         </div>
 
-        {/* Right — product image with floating card */}
-        <div className="relative flex justify-center">
-          <div className="relative animate-float">
-            <Image
-              src="/product-both.png"
-              alt="Nature's Creamery Mayonnaise — jar and bottle"
-              width={600}
-              height={500}
-              className="object-contain drop-shadow-2xl"
-              priority
-            />
-          </div>
-          {/* Floating badge */}
-          <div className="absolute bottom-8 left-0 bg-[#2D4A3E] text-[#F5F0E8] px-5 py-4 shadow-xl">
-            <div className="text-xs tracking-widest mb-1" style={{ fontFamily: "'DM Mono', monospace" }}>FROM</div>
-            <div style={{ fontFamily: "'Playfair Display', serif" }} className="text-2xl font-semibold">$5.25</div>
-            <div className="text-xs text-[#C9A84C] mt-1" style={{ fontFamily: "'DM Mono', monospace" }}>CAD / 354ml</div>
-          </div>
-        </div>
-      </div>
-
-      {/* Scroll indicator */}
-      <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-2 animate-bounce">
-        <div className="h-8 w-px bg-[#2D4A3E]/30" />
-        <span className="text-[#2D4A3E]/50 text-xs tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>SCROLL</span>
-      </div>
-    </section>
-  )
-}
-
-// ── Stats Bar ────────────────────────────────────────────────────────────────
-function StatsBar() {
-  const stats = [
-    { value: '100%', label: 'Plant-Based' },
-    { value: '0', label: 'Artificial Additives' },
-    { value: '4', label: 'Signature Spreads' },
-    { value: 'Milton', label: 'Ontario, Canada' },
-  ]
-  return (
-    <div className="bg-[#2D4A3E] py-6 overflow-hidden">
-      <div className="max-w-7xl mx-auto px-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-[#F5F0E8]/10">
-          {stats.map(({ value, label }) => (
-            <div key={label} className="text-center px-4">
-              <div style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#C9A84C] text-3xl font-bold mb-1">{value}</div>
-              <div className="text-[#F5F0E8]/60 text-xs tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>{label}</div>
+        <section id="stats" aria-label="Brand stats">
+          {stats.map((stat) => (
+            <div className="stat-item reveal" key={stat.label}>
+              <div className="stat-value">{stat.value}</div>
+              <div className="stat-label">{stat.label}</div>
             </div>
           ))}
-        </div>
-      </div>
-    </div>
-  )
-}
+        </section>
 
-// ── Products Section ─────────────────────────────────────────────────────────
-function ProductCard({ product, index }: { product: typeof FALLBACK_PRODUCTS[0]; index: number }) {
-  const { ref, visible } = useScrollAnimation()
-  const colors = ['#E8F0EC', '#F0E8E8', '#E8EBF0', '#F0ECE0']
-  const bgColor = colors[index % colors.length]
+        <section id="products">
+          <div className="section-shell">
+            <div className="section-header">
+              <div className="section-eyebrow">
+                <div className="eyebrow-line" />
+                <span className="eyebrow-text">Our Collection</span>
+                <div className="eyebrow-line" />
+              </div>
 
-  return (
-    <div
-      ref={ref}
-      className="group relative flex flex-col overflow-hidden border border-[#2D4A3E]/8 hover:border-[#C9A84C]/40 transition-all duration-500 hover:shadow-xl"
-      style={{
-        background: bgColor,
-        opacity: visible ? 1 : 0,
-        transform: visible ? 'translateY(0)' : 'translateY(50px)',
-        transition: `all 0.8s ease ${index * 120}ms`,
-      }}
-    >
-      {/* Tag */}
-      <div className="absolute top-4 left-4 z-10 bg-[#2D4A3E] text-[#C9A84C] text-xs px-3 py-1 tracking-widest" style={{ fontFamily: "'DM Mono', monospace" }}>
-        {product.tag}
-      </div>
+              <h2 className="section-title">
+                Crafted to <em>elevate</em>
+              </h2>
 
-      {/* Product visual */}
-      <div className="h-52 flex items-center justify-center text-7xl pt-8 pb-4 group-hover:scale-110 transition-transform duration-500">
-        {product.emoji}
-      </div>
-
-      <div className="p-6 flex flex-col flex-1">
-        <h3 style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#2D4A3E] text-xl font-semibold mb-2">{product.title}</h3>
-        <p className="text-[#6B4E35]/80 text-sm leading-relaxed flex-1 mb-4" style={{ fontFamily: "'Lato', sans-serif" }}>{product.description}</p>
-
-        {/* Sizes */}
-        <div className="space-y-1.5 mb-5">
-          {product.sizes.map(size => (
-            <div key={size} className="flex items-center gap-2 text-xs text-[#2D4A3E]/70" style={{ fontFamily: "'DM Mono', monospace" }}>
-              <div className="w-1 h-1 rounded-full bg-[#C9A84C]" />
-              {size}
+              <p className="section-desc">
+                Every spread is made with Burcon&apos;s innovative protein blends —
+                delivering real creaminess, zero compromise.
+              </p>
             </div>
-          ))}
-        </div>
 
-        {/* Price + CTA */}
-        <div className="flex items-center justify-between">
-          <div>
-            <div className="text-xs text-[#6B4E35]/60 tracking-wider mb-0.5" style={{ fontFamily: "'DM Mono', monospace" }}>FROM</div>
-            <div style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#2D4A3E] text-2xl font-semibold">
-              ${product.priceRange.minVariantPrice.amount} <span className="text-sm font-normal">CAD</span>
-            </div>
-          </div>
-          <a
-            href={product.checkoutUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[#2D4A3E] text-[#F5F0E8] px-5 py-2.5 text-xs tracking-widest hover:bg-[#C9A84C] hover:text-[#1C1C1C] transition-all duration-300"
-            style={{ fontFamily: "'DM Mono', monospace" }}
-          >
-            ADD TO CART →
-          </a>
-        </div>
-      </div>
-    </div>
-  )
-}
+            <div className="products-grid">
+              {products.map((product) => (
+                <article className="product-card reveal" key={product.title}>
+                  <div className="pc-visual">{product.visual}</div>
+                  <div className="pc-inner">
+                    <span className="pc-tag">{product.tag}</span>
+                    <h3 className="pc-title">{product.title}</h3>
+                    <p className="pc-desc">{product.desc}</p>
+                    <ul className="pc-sizes">
+                      {product.sizes.map((size) => (
+                        <li key={size}>{size}</li>
+                      ))}
+                    </ul>
 
-function ProductsSection() {
-  return (
-    <section id="products" className="py-24 px-6" style={{ background: '#F5F0E8' }}>
-      <div className="max-w-7xl mx-auto">
-        <AnimatedSection className="text-center mb-16">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <div className="h-px w-12 bg-[#C9A84C]" />
-            <span className="text-[#C9A84C] text-xs tracking-[0.3em]" style={{ fontFamily: "'DM Mono', monospace" }}>OUR COLLECTION</span>
-            <div className="h-px w-12 bg-[#C9A84C]" />
-          </div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#2D4A3E] text-4xl md:text-5xl font-bold mb-4">
-            Crafted to <em className="italic text-[#C9A84C]">elevate</em>
-          </h2>
-          <p className="text-[#6B4E35]/80 max-w-xl mx-auto" style={{ fontFamily: "'Lato', sans-serif" }}>
-            Every spread in our collection is made with Burcon's innovative protein blends — delivering real creaminess without compromise.
-          </p>
-        </AnimatedSection>
-
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {FALLBACK_PRODUCTS.map((product, i) => (
-            <ProductCard key={product.id} product={product} index={i} />
-          ))}
-        </div>
-
-        <AnimatedSection className="text-center mt-12" delay={200}>
-          <a
-            href="https://natures-creamery.myshopify.com/collections/all"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 border-2 border-[#2D4A3E] text-[#2D4A3E] px-10 py-4 text-sm tracking-widest hover:bg-[#2D4A3E] hover:text-[#F5F0E8] transition-all duration-400 group"
-            style={{ fontFamily: "'DM Mono', monospace" }}
-          >
-            VIEW ALL PRODUCTS
-            <span className="group-hover:translate-x-2 transition-transform">→</span>
-          </a>
-        </AnimatedSection>
-      </div>
-    </section>
-  )
-}
-
-// ── About Section ────────────────────────────────────────────────────────────
-function AboutSection() {
-  return (
-    <section id="about" className="py-24 overflow-hidden" style={{ background: '#2D4A3E' }}>
-      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-20 items-center">
-        <AnimatedSection>
-          <div className="relative">
-            <Image
-              src="/hero-illustration.png"
-              alt="Nature's Creamery illustration — farmhouse with botanical elements"
-              width={600}
-              height={500}
-              className="w-full object-contain opacity-90 drop-shadow-2xl"
-            />
-            {/* Decorative frame */}
-            <div className="absolute inset-4 border border-[#C9A84C]/20 pointer-events-none rounded-sm" />
-          </div>
-        </AnimatedSection>
-
-        <AnimatedSection delay={200}>
-          <div className="inline-flex items-center gap-3 mb-6">
-            <div className="h-px w-12 bg-[#C9A84C]" />
-            <span className="text-[#C9A84C] text-xs tracking-[0.3em]" style={{ fontFamily: "'DM Mono', monospace" }}>A HOLISTIC WAY TO INDULGE</span>
-          </div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#F5F0E8] text-4xl md:text-5xl font-bold mb-6 leading-tight">
-            Where <em className="italic text-[#C9A84C]">flavour</em> meets integrity
-          </h2>
-          <div className="space-y-4 text-[#F5F0E8]/75 leading-relaxed" style={{ fontFamily: "'Lato', sans-serif" }}>
-            <p>At Nature&apos;s Creamery, we believe treats should feel good during and after the last spoonful. Our recipes are intentionally crafted using plant-based ingredients, clean-label formulations, and protein-powered blends from Burcon NutraScience.</p>
-            <p>Think slow mornings, shared boards, and late-night snacks — all elevated with rich, creamy textures and thoughtful nutrition.</p>
-            <p>Whether you&apos;re plant-curious or fully plant-based, our spreads are made to fit beautifully into a lifestyle that values nourishment, pleasure, and care for the planet.</p>
-          </div>
-
-          <div className="mt-10 grid grid-cols-2 gap-4">
-            {[
-              { icon: '🌱', label: 'Plant-Based & Creamy', sub: 'Never compromise on texture' },
-              { icon: '💪', label: 'Protein-Enhanced', sub: 'Innovative Burcon blends' },
-              { icon: '🍞', label: 'Incredibly Versatile', sub: 'Toast, boards, baking' },
-              { icon: '📋', label: 'Clean Label', sub: 'No gums, no additives' },
-            ].map(({ icon, label, sub }) => (
-              <div key={label} className="bg-[#F5F0E8]/8 border border-[#F5F0E8]/10 p-4 rounded-sm">
-                <div className="text-2xl mb-2">{icon}</div>
-                <div className="text-[#C9A84C] text-xs tracking-wide mb-1" style={{ fontFamily: "'DM Mono', monospace" }}>{label}</div>
-                <div className="text-[#F5F0E8]/50 text-xs" style={{ fontFamily: "'Lato', sans-serif" }}>{sub}</div>
-              </div>
-            ))}
-          </div>
-        </AnimatedSection>
-      </div>
-    </section>
-  )
-}
-
-// ── Story / Burcon section ────────────────────────────────────────────────────
-function StorySection() {
-  return (
-    <section id="story" className="py-24 px-6" style={{ background: '#EBE3D0' }}>
-      <div className="max-w-5xl mx-auto">
-        <AnimatedSection className="text-center mb-16">
-          <div className="inline-flex items-center gap-3 mb-4">
-            <div className="h-px w-12 bg-[#C9A84C]" />
-            <span className="text-[#C9A84C] text-xs tracking-[0.3em]" style={{ fontFamily: "'DM Mono', monospace" }}>THE SCIENCE OF CREAMY</span>
-            <div className="h-px w-12 bg-[#C9A84C]" />
-          </div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#2D4A3E] text-4xl md:text-5xl font-bold mb-6">
-            Powered by <em className="italic text-[#C9A84C]">Burcon</em>
-          </h2>
-          <p className="text-[#6B4E35]/80 max-w-2xl mx-auto text-lg leading-relaxed" style={{ fontFamily: "'Lato', sans-serif" }}>
-            Our secret? Burcon NutraScience&apos;s <strong>Peazazz® C</strong> and <strong>Puratein® C</strong> — pea and canola protein isolates that give our spreads their legendary creaminess. No eggs. No gums. Just science and nature working together.
-          </p>
-        </AnimatedSection>
-
-        <div className="grid md:grid-cols-3 gap-8">
-          {[
-            { num: '01', title: 'Source', body: 'We start with Burcon\'s pure pea and canola protein isolates — the cleanest plant-based emulsifiers on the planet.' },
-            { num: '02', title: 'Craft', body: 'Our team blends each spread to achieve the exact texture and richness of traditional mayo, without any artificial shortcuts.' },
-            { num: '03', title: 'Deliver', body: 'Bottled fresh in Milton, Ontario and ready for your fridge — whether 354ml or 4L, every jar is made with care.' },
-          ].map(({ num, title, body }, i) => (
-            <AnimatedSection key={num} delay={i * 150}>
-              <div className="relative p-8 border border-[#2D4A3E]/12 hover:border-[#C9A84C]/40 transition-all duration-500 bg-[#F5F0E8] group">
-                <div style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#C9A84C]/30 text-6xl font-bold mb-4 group-hover:text-[#C9A84C]/50 transition-colors">{num}</div>
-                <h3 style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#2D4A3E] text-2xl font-semibold mb-3">{title}</h3>
-                <p className="text-[#6B4E35]/80 leading-relaxed" style={{ fontFamily: "'Lato', sans-serif" }}>{body}</p>
-              </div>
-            </AnimatedSection>
-          ))}
-        </div>
-      </div>
-    </section>
-  )
-}
-
-// ── Product Showcase ─────────────────────────────────────────────────────────
-function ProductShowcase() {
-  return (
-    <section className="py-24 overflow-hidden" style={{ background: '#F5F0E8' }}>
-      <div className="max-w-7xl mx-auto px-6 grid lg:grid-cols-2 gap-16 items-center">
-        <AnimatedSection delay={100}>
-          <div className="inline-flex items-center gap-3 mb-6">
-            <div className="h-px w-12 bg-[#C9A84C]" />
-            <span className="text-[#C9A84C] text-xs tracking-[0.3em]" style={{ fontFamily: "'DM Mono', monospace" }}>SIGNATURE PRODUCT</span>
-          </div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#2D4A3E] text-4xl md:text-5xl font-bold mb-6 leading-tight">
-            The original.<br />
-            <em className="italic text-[#C9A84C]">Perfectly creamy.</em>
-          </h2>
-          <p className="text-[#6B4E35]/80 leading-relaxed mb-8 text-lg" style={{ fontFamily: "'Lato', sans-serif" }}>
-            Nature&apos;s Creamery Mayonnaise is a premium plant-based mayo crafted for chefs, retailers, and conscious consumers who demand taste without compromise. Allergen-friendly, gum-free, preservative-free.
-          </p>
-          <div className="space-y-3 mb-10">
-            {['No eggs, no gums, no artificial additives', 'Rich, creamy texture you have to taste to believe', 'Perfect for sandwiches, dips, dressings & baking', 'Available in 354ml, 500ml, and 4L sizes'].map(point => (
-              <div key={point} className="flex items-center gap-3 text-[#2D4A3E]/80" style={{ fontFamily: "'Lato', sans-serif" }}>
-                <div className="w-5 h-5 rounded-full bg-[#C9A84C]/20 flex items-center justify-center flex-shrink-0">
-                  <div className="w-2 h-2 rounded-full bg-[#C9A84C]" />
-                </div>
-                {point}
-              </div>
-            ))}
-          </div>
-          <a
-            href="https://natures-creamery.myshopify.com/collections/all"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-3 bg-[#C9A84C] text-[#1C1C1C] px-8 py-4 text-sm tracking-widest font-semibold hover:bg-[#2D4A3E] hover:text-[#F5F0E8] transition-all duration-400 group"
-            style={{ fontFamily: "'DM Mono', monospace" }}
-          >
-            ORDER NOW
-            <span className="group-hover:translate-x-1 transition-transform">→</span>
-          </a>
-        </AnimatedSection>
-
-        <AnimatedSection>
-          <div className="relative animate-float">
-            <Image
-              src="/product-bottle.png"
-              alt="Nature's Creamery Mayonnaise squeeze bottle"
-              width={500}
-              height={600}
-              className="object-contain mx-auto drop-shadow-2xl"
-            />
-          </div>
-        </AnimatedSection>
-      </div>
-    </section>
-  )
-}
-
-// ── Contact Section ───────────────────────────────────────────────────────────
-function ContactSection() {
-  const [form, setForm] = useState({ name: '', email: '', message: '' })
-  const [sent, setSent] = useState(false)
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault()
-    const mailto = `mailto:hello@naturescreamery.com?subject=Enquiry from ${encodeURIComponent(form.name)}&body=${encodeURIComponent(form.message)}%0A%0AFrom: ${encodeURIComponent(form.email)}`
-    window.location.href = mailto
-    setSent(true)
-  }
-
-  return (
-    <section id="contact" className="py-24 px-6" style={{ background: '#2D4A3E' }}>
-      <div className="max-w-6xl mx-auto grid lg:grid-cols-2 gap-16">
-        <AnimatedSection>
-          <div className="inline-flex items-center gap-3 mb-6">
-            <div className="h-px w-12 bg-[#C9A84C]" />
-            <span className="text-[#C9A84C] text-xs tracking-[0.3em]" style={{ fontFamily: "'DM Mono', monospace" }}>GET IN TOUCH</span>
-          </div>
-          <h2 style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#F5F0E8] text-4xl md:text-5xl font-bold mb-6">
-            Let&apos;s talk <em className="italic text-[#C9A84C]">spreads.</em>
-          </h2>
-          <p className="text-[#F5F0E8]/70 leading-relaxed mb-10" style={{ fontFamily: "'Lato', sans-serif" }}>
-            Whether you&apos;re a retailer, chef, or a passionate mayo lover — we&apos;d love to hear from you. Visit us in Milton or drop us a line.
-          </p>
-          <div className="space-y-6">
-            {[
-              { icon: '📍', label: 'Location', value: '201 Main St E, Milton, ON, Canada' },
-              { icon: '🌐', label: 'Website', value: 'naturescreamery.com' },
-              { icon: '🛒', label: 'Shop Online', value: 'natures-creamery.myshopify.com' },
-            ].map(({ icon, label, value }) => (
-              <div key={label} className="flex items-start gap-4">
-                <div className="text-2xl">{icon}</div>
-                <div>
-                  <div className="text-[#C9A84C] text-xs tracking-widest mb-1" style={{ fontFamily: "'DM Mono', monospace" }}>{label}</div>
-                  <div className="text-[#F5F0E8]/80" style={{ fontFamily: "'Lato', sans-serif" }}>{value}</div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </AnimatedSection>
-
-        <AnimatedSection delay={200}>
-          {sent ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center">
-                <div className="text-5xl mb-4">✅</div>
-                <h3 style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#F5F0E8] text-2xl mb-2">Message sent!</h3>
-                <p className="text-[#F5F0E8]/60" style={{ fontFamily: "'Lato', sans-serif" }}>We&apos;ll be in touch soon.</p>
-              </div>
-            </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-5">
-              {[
-                { name: 'name', label: 'YOUR NAME', type: 'text', placeholder: 'Jane Smith' },
-                { name: 'email', label: 'EMAIL ADDRESS', type: 'email', placeholder: 'jane@example.com' },
-              ].map(field => (
-                <div key={field.name}>
-                  <label className="block text-[#C9A84C] text-xs tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>{field.label}</label>
-                  <input
-                    type={field.type}
-                    placeholder={field.placeholder}
-                    required
-                    value={form[field.name as keyof typeof form]}
-                    onChange={e => setForm(prev => ({ ...prev, [field.name]: e.target.value }))}
-                    className="w-full bg-[#F5F0E8]/8 border border-[#F5F0E8]/15 text-[#F5F0E8] placeholder-[#F5F0E8]/30 px-4 py-3 focus:outline-none focus:border-[#C9A84C] transition-colors"
-                    style={{ fontFamily: "'Lato', sans-serif" }}
-                  />
-                </div>
+                    <div className="pc-footer">
+                      <div>
+                        <div className="pc-from">From</div>
+                        <div className="pc-price">{product.price}</div>
+                      </div>
+                      <a
+                        href="https://natures-creamery.myshopify.com/collections/all"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="pc-cta"
+                      >
+                        Shop Now →
+                      </a>
+                    </div>
+                  </div>
+                </article>
               ))}
-              <div>
-                <label className="block text-[#C9A84C] text-xs tracking-widest mb-2" style={{ fontFamily: "'DM Mono', monospace" }}>MESSAGE</label>
-                <textarea
-                  rows={5}
-                  placeholder="Tell us what you have in mind..."
-                  required
-                  value={form.message}
-                  onChange={e => setForm(prev => ({ ...prev, message: e.target.value }))}
-                  className="w-full bg-[#F5F0E8]/8 border border-[#F5F0E8]/15 text-[#F5F0E8] placeholder-[#F5F0E8]/30 px-4 py-3 focus:outline-none focus:border-[#C9A84C] transition-colors resize-none"
-                  style={{ fontFamily: "'Lato', sans-serif" }}
+            </div>
+          </div>
+        </section>
+
+        <section id="about">
+          <div className="section-shell about-grid">
+            <div className="about-img-wrap reveal">
+              <div className="about-img-frame">
+                <img
+                  src="/images/farmhouse-illustration.png"
+                  alt="Nature's Creamery farmhouse illustration"
+                  loading="lazy"
                 />
               </div>
-              <button
-                type="submit"
-                className="w-full bg-[#C9A84C] text-[#1C1C1C] py-4 text-sm tracking-widest font-semibold hover:bg-[#F5F0E8] transition-colors duration-300"
-                style={{ fontFamily: "'DM Mono', monospace" }}
+              <div className="about-img-decoration" aria-hidden="true" />
+            </div>
+
+            <div className="about-content reveal">
+              <div className="section-eyebrow">
+                <div className="eyebrow-line" />
+                <span className="eyebrow-text">A Holistic Way to Indulge</span>
+              </div>
+
+              <h2 className="about-title">
+                Where <em>flavour</em> meets integrity
+              </h2>
+
+              <p className="about-text">
+                At Nature&apos;s Creamery, we believe treats should feel good during
+                and after the last spoonful. Our recipes are intentionally crafted
+                using plant-based ingredients, clean-label formulations, and
+                protein-powered blends from Burcon NutraScience.
+              </p>
+
+              <p className="about-text">
+                Think slow mornings, shared boards, and late-night snacks — all
+                elevated with rich, creamy textures and thoughtful nutrition.
+              </p>
+
+              <p className="about-text">
+                Whether you&apos;re plant-curious or fully plant-based, our spreads
+                fit beautifully into a lifestyle that values nourishment, pleasure,
+                and care for the planet.
+              </p>
+
+              <div className="about-pills">
+                {aboutPills.map((pill) => (
+                  <div className="about-pill" key={pill.label}>
+                    <div className="about-pill-icon">{pill.icon}</div>
+                    <div className="about-pill-label">{pill.label}</div>
+                    <div className="about-pill-sub">{pill.sub}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section id="story">
+          <div className="story-inner">
+            <div className="section-header">
+              <div className="section-eyebrow">
+                <div className="eyebrow-line" />
+                <span className="eyebrow-text">The Science of Creamy</span>
+                <div className="eyebrow-line" />
+              </div>
+
+              <h2 className="section-title">
+                Powered by <em>Burcon</em>
+              </h2>
+
+              <p className="section-desc">
+                Our secret? Burcon NutraScience&apos;s pea and canola protein isolates
+                that give our spreads their legendary creaminess without eggs or gums.
+              </p>
+            </div>
+
+            <div className="story-steps">
+              {storySteps.map((step) => (
+                <div className="story-step reveal" key={step.num}>
+                  <div className="step-num">{step.num}</div>
+                  <h3 className="step-title">{step.title}</h3>
+                  <p className="step-body">{step.body}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section id="showcase">
+          <div className="showcase-inner">
+            <div className="showcase-img reveal">
+              <img
+                src="/images/label-detail.png"
+                alt="Nature's Creamery label detail"
+                loading="lazy"
+              />
+            </div>
+
+            <div className="showcase-content reveal">
+              <div className="section-eyebrow">
+                <div className="eyebrow-line" />
+                <span className="eyebrow-text">Signature Product</span>
+              </div>
+
+              <h2 className="section-title" style={{ textAlign: "left" }}>
+                The original.
+                <br />
+                <em>Perfectly creamy.</em>
+              </h2>
+
+              <ul className="showcase-points">
+                {showcasePoints.map((point) => (
+                  <li className="showcase-point" key={point}>
+                    <div className="sp-dot" aria-hidden="true" />
+                    <span className="sp-text">{point}</span>
+                  </li>
+                ))}
+              </ul>
+
+              <a
+                href="https://natures-creamery.myshopify.com/collections/all"
+                target="_blank"
+                rel="noreferrer"
+                className="btn-primary"
               >
-                SEND MESSAGE →
-              </button>
-            </form>
-          )}
-        </AnimatedSection>
-      </div>
-    </section>
-  )
-}
-
-// ── Footer ───────────────────────────────────────────────────────────────────
-function Footer() {
-  return (
-    <footer style={{ background: '#1C1C1C' }} className="py-12 px-6">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
-          <div>
-            <div style={{ fontFamily: "'Playfair Display', serif" }} className="text-[#F5F0E8] text-xl font-semibold">Nature&apos;s Creamery</div>
-            <div className="text-[#C9A84C] text-xs tracking-[0.25em] mt-1" style={{ fontFamily: "'DM Mono', monospace" }}>CREAMY WITHOUT COMPROMISE</div>
-          </div>
-          <div className="flex gap-8">
-            {[['#products', 'Products'], ['#about', 'About'], ['#story', 'Story'], ['#contact', 'Contact']].map(([href, label]) => (
-              <a key={href} href={href} className="text-[#F5F0E8]/50 text-xs tracking-widest hover:text-[#C9A84C] transition-colors" style={{ fontFamily: "'DM Mono', monospace" }}>
-                {label}
+                Order Now <span aria-hidden="true">→</span>
               </a>
-            ))}
+            </div>
           </div>
-          <a
-            href="https://natures-creamery.myshopify.com/collections/all"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="bg-[#C9A84C] text-[#1C1C1C] px-6 py-2.5 text-xs tracking-widest font-semibold hover:bg-[#F5F0E8] transition-colors"
-            style={{ fontFamily: "'DM Mono', monospace" }}
-          >
-            SHOP NOW
-          </a>
-        </div>
-        <div className="border-t border-[#F5F0E8]/8 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-[#F5F0E8]/30 text-xs" style={{ fontFamily: "'DM Mono', monospace" }}>
-            © {new Date().getFullYear()} Nature&apos;s Creamery. All rights reserved. | Milton, Ontario, Canada
-          </p>
-          <p className="text-[#F5F0E8]/20 text-xs" style={{ fontFamily: "'DM Mono', monospace" }}>
-            Made with 🌱 using Next.js & Shopify
-          </p>
-        </div>
-      </div>
-    </footer>
-  )
-}
+        </section>
 
-// ── Main Page ────────────────────────────────────────────────────────────────
-export default function Home() {
-  return (
-    <>
-      <Navbar />
-      <main>
-        <Hero />
-        <StatsBar />
-        <ProductsSection />
-        <AboutSection />
-        <StorySection />
-        <ProductShowcase />
-        <ContactSection />
+        <section id="contact">
+          <div className="contact-inner">
+            <div className="contact-left reveal">
+              <div className="section-eyebrow">
+                <div className="eyebrow-line" />
+                <span className="eyebrow-text">Get in Touch</span>
+              </div>
+
+              <h2 className="contact-title">
+                Let&apos;s talk <em>spreads.</em>
+              </h2>
+
+              <p className="contact-desc">
+                Whether you&apos;re a retailer, chef, or a passionate mayo lover —
+                we&apos;d love to hear from you. Visit us in Milton or drop us a line
+                anytime.
+              </p>
+
+              <div className="contact-info">
+                <div className="ci-item">
+                  <div className="ci-icon">📍</div>
+                  <div>
+                    <div className="ci-label">Location</div>
+                    <div className="ci-value">201 Main St E, Milton, ON, Canada</div>
+                  </div>
+                </div>
+
+                <div className="ci-item">
+                  <div className="ci-icon">🌐</div>
+                  <div>
+                    <div className="ci-label">Main Website</div>
+                    <a
+                      href="https://naturescreamery.com"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="ci-value"
+                    >
+                      naturescreamery.com
+                    </a>
+                  </div>
+                </div>
+
+                <div className="ci-item">
+                  <div className="ci-icon">🛒</div>
+                  <div>
+                    <div className="ci-label">Shop Online</div>
+                    <a
+                      href="https://natures-creamery.myshopify.com/collections/all"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="ci-value"
+                    >
+                      natures-creamery.myshopify.com
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="contact-form reveal">
+              <form onSubmit={handleSubmit} className="form-grid" noValidate>
+                <div>
+                  <label htmlFor="name" className="form-label">
+                    Your Name *
+                  </label>
+                  <input
+                    id="name"
+                    name="name"
+                    className="form-input"
+                    placeholder="Jane Smith"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="email" className="form-label">
+                    Email Address *
+                  </label>
+                  <input
+                    id="email"
+                    name="email"
+                    type="email"
+                    className="form-input"
+                    placeholder="jane@example.com"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="subject" className="form-label">
+                    Subject
+                  </label>
+                  <input
+                    id="subject"
+                    name="subject"
+                    className="form-input"
+                    placeholder="Retail inquiry, bulk order, etc."
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="message" className="form-label">
+                    Message *
+                  </label>
+                  <textarea
+                    id="message"
+                    name="message"
+                    rows={5}
+                    className="form-input"
+                    placeholder="Tell us what you have in mind..."
+                  />
+                </div>
+
+                {formError ? <div className="form-error">{formError}</div> : null}
+
+                <button type="submit" className="form-btn">
+                  Send Message →
+                </button>
+
+                {submitted ? (
+                  <div className="form-success">
+                    <strong>Message started.</strong>
+                    <div>Your email app should open with the pre-filled message.</div>
+                  </div>
+                ) : null}
+              </form>
+            </div>
+          </div>
+        </section>
       </main>
-      <Footer />
+
+      <footer>
+        <div className="footer-inner">
+          <div className="footer-top">
+            <div>
+              <div className="footer-brand-name">Nature&apos;s Creamery</div>
+              <div className="footer-brand-tag">Creamy Without Compromise</div>
+            </div>
+
+            <ul className="footer-nav">
+              <li><a href="#products">Products</a></li>
+              <li><a href="#about">About</a></li>
+              <li><a href="#story">Story</a></li>
+              <li><a href="#contact">Contact</a></li>
+            </ul>
+
+            <a
+              href="https://natures-creamery.myshopify.com/collections/all"
+              target="_blank"
+              rel="noreferrer"
+              className="footer-shop-btn"
+            >
+              Shop Now
+            </a>
+          </div>
+
+          <div className="footer-bottom">
+            <p className="footer-copy">
+              © {new Date().getFullYear()} Nature&apos;s Creamery. All rights reserved.
+              Milton, Ontario, Canada.
+            </p>
+            <p className="footer-copy">Made with 🌱</p>
+          </div>
+        </div>
+      </footer>
     </>
-  )
+  );
 }
