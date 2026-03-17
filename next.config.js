@@ -1,7 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   images: {
-    domains: ['cdn.shopify.com', 'natures-creamery.myshopify.com'],
+    unoptimized: true,
+    domains: [
+      'cdn.shopify.com',
+      'natures-creamery.myshopify.com',
+    ],
   },
 }
 
