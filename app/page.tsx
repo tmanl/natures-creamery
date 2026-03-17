@@ -35,7 +35,7 @@ const PRODUCTS: Product[] = [
     from: '5.69',
     sizes: ['354ml Squeeze Bottle — $5.69', '500ml Mason Jar — $8.00', '4L Tub — $32.00'],
     img: '/product-chipotle.png',
-    imgAlt: "Nature's Creamery Chipotle Mayo bottle surrounded by red peppers, garlic, and chipotle spices",
+    imgAlt: "Nature's Creamery Chipotle Mayo bottle surrounded by red peppers, garlic, and chipotle spices on a dark background",
     accentBg: '#5C1010',
   },
   {
@@ -45,7 +45,7 @@ const PRODUCTS: Product[] = [
     from: '5.45',
     sizes: ['354ml Squeeze Bottle — $5.45', '500ml Mason Jar — $7.79', '4L Tub — $34.00'],
     img: '/product-olivida.png',
-    imgAlt: "Nature's Creamery OliVida Mediterranean Spread bottle with green olives and rosemary",
+    imgAlt: "Nature's Creamery OliVida Mediterranean Spread bottle with green olives, rosemary, and olive oil on a wooden board",
     accentBg: '#1A3D0A',
   },
   {
@@ -55,7 +55,7 @@ const PRODUCTS: Product[] = [
     from: '7.00',
     sizes: ['250ml — $7.00', '500ml — $14.00'],
     img: '/product-cocovida.png',
-    imgAlt: "Nature's Creamery CocoVida Chocolate Spread bottle with coconut halves and dark chocolate",
+    imgAlt: "Nature's Creamery CocoVida Chocolate Spread bottle with coconut halves and dark chocolate pieces on a dark surface",
     accentBg: '#2C1400',
   },
 ]
@@ -103,7 +103,9 @@ function ProductCard({ p, delay }: { p: Product; delay: number }) {
       style={{
         background: hovered ? p.accentBg : '#FAFAF8',
         display: 'flex', flexDirection: 'column',
-        border: '1px solid #E0D8C8', borderRadius: 6, overflow: 'hidden',
+        border: '1px solid #E0D8C8',
+        borderRadius: 6,
+        overflow: 'hidden',
         opacity: visible ? 1 : 0,
         transform: visible ? 'none' : 'translateY(40px)',
         transition: `opacity .7s cubic-bezier(.16,1,.3,1) ${delay}ms, transform .7s cubic-bezier(.16,1,.3,1) ${delay}ms, background .4s ease`,
@@ -130,8 +132,7 @@ function ProductCard({ p, delay }: { p: Product; delay: number }) {
           position: 'absolute', top: 14, left: 14,
           background: hovered ? 'rgba(255,255,255,.15)' : p.tagColor,
           color: '#fff',
-          fontFamily: 'DM Mono, monospace', fontSize: 10,
-          letterSpacing: '.18em', textTransform: 'uppercase',
+          fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '.18em', textTransform: 'uppercase',
           padding: '5px 12px', borderRadius: 100, fontWeight: 500,
           backdropFilter: hovered ? 'blur(8px)' : 'none',
           transition: 'all .4s',
@@ -141,14 +142,12 @@ function ProductCard({ p, delay }: { p: Product; delay: number }) {
       </div>
       <div style={{ padding: '24px 24px 28px', display: 'flex', flexDirection: 'column', flex: 1 }}>
         <p style={{
-          fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '.15em',
-          textTransform: 'uppercase', color: hovered ? 'rgba(255,255,255,.5)' : '#B8933A',
-          marginBottom: 6, transition: 'color .4s',
+          fontFamily: 'DM Mono, monospace', fontSize: 10, letterSpacing: '.15em', textTransform: 'uppercase',
+          color: hovered ? 'rgba(255,255,255,.5)' : '#B8933A', marginBottom: 6, transition: 'color .4s',
         }}>{p.subtitle}</p>
         <h3 style={{
           fontFamily: 'Cormorant Garamond, serif', fontSize: 30, fontWeight: 700,
-          color: hovered ? '#fff' : '#1E3A2F', lineHeight: 1.1, marginBottom: 10,
-          transition: 'color .4s',
+          color: hovered ? '#fff' : '#1E3A2F', lineHeight: 1.1, marginBottom: 10, transition: 'color .4s',
         }}>{p.title}</h3>
         <p style={{
           fontFamily: 'Outfit, sans-serif', fontSize: 14, fontWeight: 400,
@@ -183,8 +182,8 @@ function ProductCard({ p, delay }: { p: Product; delay: number }) {
               display: 'inline-flex', alignItems: 'center', gap: 6,
               fontFamily: 'Outfit, sans-serif', fontSize: 13, fontWeight: 700,
               background: hovered ? '#B8933A' : '#1E3A2F',
-              color: '#fff', padding: '12px 20px', textDecoration: 'none',
-              borderRadius: 4, transition: 'background .25s, transform .2s', whiteSpace: 'nowrap',
+              color: '#fff', padding: '12px 20px', textDecoration: 'none', borderRadius: 4,
+              transition: 'background .25s, transform .2s', whiteSpace: 'nowrap',
             }}
             onMouseEnter={e => { e.currentTarget.style.transform = 'translateY(-2px)' }}
             onMouseLeave={e => { e.currentTarget.style.transform = 'none' }}>
