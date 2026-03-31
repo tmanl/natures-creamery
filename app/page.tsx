@@ -448,7 +448,7 @@ export default function Home() {
     }
 
     const body = `Name: ${form.name}\nEmail: ${form.email}\n\n${form.message}`
-    window.location.href = `mailto:hello@naturescreamery.com?subject=${encodeURIComponent(
+    window.location.href = `mailto:jason@naturescreamery.ca?subject=${encodeURIComponent(
       form.subject || 'Website Enquiry'
     )}&body=${encodeURIComponent(body)}`
     setSent(true)
