@@ -1666,7 +1666,7 @@ export default function Home() {
                     'No eggs, no gums, no artificial additives — just honest ingredients',
                     "Rich, creamy texture powered by Burcon's Peazazz C and Puratein C",
                     'Allergen-friendly, preservative-free, and fully plant-based',
-                    '354 ml squeeze bottle, keep refrigerated — larger formats for food service on request',
+                    '354 ml squeeze bottle online — 500 ml jar available on request',
                   ].map((t) => (
                     <li
                       key={t}

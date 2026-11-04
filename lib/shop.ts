@@ -87,7 +87,7 @@ export const PRODUCTS: Product[] = [
       },
       {
         label: 'Pre-order',
-        format: '2.03 kg · 58 servings',
+        format: '2.03 kg · 58 servings · ships Dec 1',
         price: 97.99,
         variantId: '46727617151055',
         handle: 'chocolate-protein-powder-2-03kg-pre-order-oct-18-ship-date',
@@ -95,8 +95,8 @@ export const PRODUCTS: Product[] = [
       },
     ],
     defaultSize: 1,
-    img: `${SHOPIFY_STORE}/cdn/shop/files/2.03Kg_58_servings.jpg?v=1788818649&width=900`,
-    imgAlt: "Nature's Creamery Chocolate Protein Powder 2.03 kg bag, 58 servings",
+    img: '/product-protein.svg',
+    imgAlt: "Nature's Creamery Chocolate Protein powder pouch with a scoop of powder",
     accentBg: '#2C1400',
   },
   {

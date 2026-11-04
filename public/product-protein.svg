@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 440" role="img" aria-labelledby="t">
+  <title id="t">Chocolate protein powder</title>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#3A1E0E"/>
+      <stop offset="1" stop-color="#1F0E05"/>
+    </linearGradient>
+    <linearGradient id="bag" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#5C3317"/>
+      <stop offset=".5" stop-color="#7A4522"/>
+      <stop offset="1" stop-color="#4A2812"/>
+    </linearGradient>
+    <linearGradient id="scoop" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F5F0E8"/>
+      <stop offset="1" stop-color="#D9CDB4"/>
+    </linearGradient>
+  </defs>
+  <rect width="640" height="440" fill="url(#bg)"/>
+  <!-- soft spill of powder -->
+  <ellipse cx="320" cy="400" rx="230" ry="30" fill="#2A1508"/>
+  <ellipse cx="320" cy="394" rx="185" ry="20" fill="#3B2010" opacity=".8"/>
+  <!-- stand-up pouch -->
+  <path d="M215 70 q0 -32 32 -32 h146 q32 0 32 32 v270 q0 40 -40 44 h-130 q-40 -4 -40 -44 z" fill="url(#bag)"/>
+  <path d="M215 70 q0 -32 32 -32 h146 q32 0 32 32 v14 h-210 z" fill="#2E1708" opacity=".55"/>
+  <path d="M232 48 h176" stroke="#B8933A" stroke-width="3" stroke-linecap="round" opacity=".9"/>
+  <path d="M232 60 h176" stroke="#B8933A" stroke-width="1.5" stroke-linecap="round" opacity=".5"/>
+  <!-- label -->
+  <rect x="246" y="122" width="148" height="170" rx="10" fill="#F5F0E8"/>
+  <rect x="256" y="132" width="128" height="150" rx="6" fill="none" stroke="#B8933A" stroke-width="2"/>
+  <text x="320" y="160" text-anchor="middle" font-family="DM Mono, Menlo, monospace" font-size="9" letter-spacing="2.5" fill="#1E3A2F">NATURE'S CREAMERY</text>
+  <text x="320" y="204" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="32" font-weight="700" fill="#1E3A2F">Chocolate</text>
+  <text x="320" y="234" text-anchor="middle" font-family="Cormorant Garamond, Georgia, serif" font-size="26" font-style="italic" fill="#B8933A">Protein</text>
+  <text x="320" y="264" text-anchor="middle" font-family="DM Mono, Menlo, monospace" font-size="8.5" letter-spacing="1.8" fill="#4A3728">FAVA &amp; PEA ISOLATES</text>
+  <!-- scoop -->
+  <path d="M448 352 l80 -60" stroke="#C9B48A" stroke-width="11" stroke-linecap="round"/>
+  <ellipse cx="442" cy="358" rx="38" ry="23" fill="url(#scoop)"/>
+  <ellipse cx="442" cy="352" rx="30" ry="14" fill="#4A2812"/>
+  <ellipse cx="442" cy="349" rx="26" ry="10" fill="#5C3317"/>
+</svg>
