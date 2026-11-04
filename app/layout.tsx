@@ -1,14 +1,21 @@
 import type { Metadata } from 'next'
 import './globals.css'
 
+const SITE_URL = 'https://www.naturescreamery.com'
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  alternates: { canonical: '/' },
   title: "Nature's Creamery — Creamy Without Compromise",
-  description: "Premium plant-based spreads crafted with Burcon's innovative protein blends. Clean-label mayonnaise, chipotle mayo, and artisan spreads made in Canada.",
-  keywords: "plant-based mayo, vegan mayonnaise, Nature's Creamery, clean label spread, Burcon protein",
+  description: "Plant-based mayo, spreads and chocolate protein powder made in Milton, Ontario. Clean label, no eggs, no gums.",
+  keywords: "plant-based mayo, vegan mayonnaise, Nature's Creamery, clean label spread, plant protein powder, Milton Ontario",
   openGraph: {
+    url: SITE_URL,
+    siteName: "Nature's Creamery",
     title: "Nature's Creamery — Creamy Without Compromise",
-    description: "Premium plant-based spreads crafted from nature's best ingredients.",
+    description: "Plant-based mayo, spreads and chocolate protein powder made in Milton, Ontario.",
     type: 'website',
+    locale: 'en_CA',
   },
 }
 

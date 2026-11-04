@@ -1,76 +1,8 @@
 'use client'
 import { useState, useEffect, useRef, type FormEvent, type ReactNode } from 'react'
+import { PRODUCTS, COMING_SOON, SHOPIFY_COLLECTION, SITE_URL, buyLink, byId, cad, type Product } from '../lib/shop'
 
-const SHOPIFY = 'https://natures-creamery.myshopify.com/collections/all'
-
-type Product = {
-  id: string
-  tag: string
-  tagColor: string
-  title: string
-  subtitle: string
-  desc: string
-  from: string
-  sizes: string[]
-  img: string
-  imgAlt: string
-  accentBg: string
-}
-
-const PRODUCTS: Product[] = [
-  {
-    id: '1',
-    tag: 'Bestseller',
-    tagColor: '#1E3A2F',
-    title: 'Classic Mayo',
-    subtitle: "Nature's Creamery Mayonnaise",
-    desc: 'Creamy plant-based mayo crafted without eggs, gums, or artificial additives. Rich texture, authentic flavour every time.',
-    from: '5.25',
-    sizes: ['354ml Squeeze Bottle — $5.25', '500ml Mason Jar — $7.39', '4L Tub — $32.00'],
-    img: '/product-bottle.png',
-    imgAlt: "Nature's Creamery Classic Mayonnaise squeeze bottle with yellow cap and farmhouse label",
-    accentBg: '#1E3A2F',
-  },
-  {
-    id: '2',
-    tag: 'Spicy',
-    tagColor: '#8B1A1A',
-    title: 'Chipotle Mayo',
-    subtitle: "Nature's Creamery Chipotle",
-    desc: 'Boldly smoky with a chipotle kick. Perfect for sandwiches, tacos, dips, and wraps.',
-    from: '5.69',
-    sizes: ['354ml Squeeze Bottle — $5.69', '500ml Mason Jar — $8.00', '4L Tub — $32.00'],
-    img: '/product-chipotle.png',
-    imgAlt: "Nature's Creamery Chipotle Mayo bottle surrounded by red peppers, garlic, and chipotle spices on a dark background",
-    accentBg: '#5C1010',
-  },
-  {
-    id: '3',
-    tag: 'Artisan',
-    tagColor: '#2D5A1E',
-    title: 'OliVida',
-    subtitle: 'Mediterranean Spread',
-    desc: 'Crema della vita. A Mediterranean-inspired spread that transforms every board and sandwich.',
-    from: '5.45',
-    sizes: ['354ml Squeeze Bottle — $5.45', '500ml Mason Jar — $7.79', '4L Tub — $34.00'],
-    img: '/product-olivida.png',
-    imgAlt: "Nature's Creamery OliVida Mediterranean Spread bottle with green olives, rosemary, and olive oil on a wooden board",
-    accentBg: '#1A3D0A',
-  },
-  {
-    id: '4',
-    tag: 'New',
-    tagColor: '#5C3317',
-    title: 'CocoVida',
-    subtitle: 'Chocolate Spread',
-    desc: 'Indulgence without compromise. A rich, creamy chocolate spread for those who love flavour and read labels.',
-    from: '7.00',
-    sizes: ['250ml — $7.00', '500ml — $14.00'],
-    img: '/product-cocovida.png',
-    imgAlt: "Nature's Creamery CocoVida Chocolate Spread bottle with coconut halves and dark chocolate pieces on a dark surface",
-    accentBg: '#2C1400',
-  },
-]
+const SHOPIFY = SHOPIFY_COLLECTION
 
 function useReveal(threshold = 0.1) {
   const ref = useRef<HTMLDivElement | null>(null)
@@ -130,7 +62,26 @@ function Reveal({
 
 function ProductCard({ p, delay }: { p: Product; delay: number }) {
   const [hovered, setHovered] = useState(false)
+  const [sel, setSel] = useState(p.defaultSize)
   const { ref, visible } = useReveal()
+  const size = p.sizes[sel]
+  const link = buyLink(p, sel)
+  const groupId = `size-${p.id}`
+
+  function onSizeKey(e: React.KeyboardEvent<HTMLButtonElement>, idx: number) {
+    const n = p.sizes.length
+    let next: number | null = null
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') next = (idx + 1) % n
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') next = (idx - 1 + n) % n
+    if (e.key === 'Home') next = 0
+    if (e.key === 'End') next = n - 1
+    if (next !== null) {
+      e.preventDefault()
+      setSel(next)
+      const btn = e.currentTarget.parentElement?.children[next] as HTMLElement | undefined
+      btn?.focus()
+    }
+  }
 
   return (
     <div
@@ -239,36 +190,60 @@ function ProductCard({ p, delay }: { p: Product; delay: number }) {
           {p.desc}
         </p>
 
-        <ul style={{ listStyle: 'none', padding: 0, marginBottom: 22 }}>
-          {p.sizes.map((s) => (
-            <li
-              key={s}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 10,
-                fontFamily: 'DM Mono, monospace',
-                fontSize: 11,
-                color: hovered ? 'rgba(255,255,255,.6)' : '#1E3A2F',
-                padding: '6px 0',
-                borderBottom: `1px solid ${hovered ? 'rgba(255,255,255,.08)' : 'rgba(30,58,47,.07)'}`,
-                transition: 'color .4s, border-color .4s',
-              }}
-            >
-              <span
-                style={{
-                  width: 5,
-                  height: 5,
-                  borderRadius: '50%',
-                  background: '#B8933A',
-                  flexShrink: 0,
-                }}
-                aria-hidden="true"
-              />
-              {s}
-            </li>
-          ))}
-        </ul>
+        {p.sizes.length > 1 && (
+        <fieldset style={{ border: 'none', padding: 0, marginBottom: 20 }}>
+          <legend
+            id={`${groupId}-label`}
+            style={{
+              fontFamily: 'DM Mono, monospace',
+              fontSize: 9,
+              letterSpacing: '.15em',
+              textTransform: 'uppercase',
+              color: hovered ? 'rgba(255,255,255,.45)' : 'rgba(30,58,47,.5)',
+              marginBottom: 8,
+              transition: 'color .4s',
+            }}
+          >
+            Size
+          </legend>
+          <div
+            role="radiogroup"
+            aria-labelledby={`${groupId}-label`}
+            style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(72px, 1fr))', gap: 6 }}
+          >
+            {p.sizes.map((s, idx) => {
+              const on = idx === sel
+              return (
+                <button
+                  key={s.label}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  tabIndex={on ? 0 : -1}
+                  onClick={() => setSel(idx)}
+                  onKeyDown={(e) => onSizeKey(e, idx)}
+                  style={{
+                    fontFamily: 'DM Mono, monospace',
+                    fontSize: 11,
+                    fontWeight: 500,
+                    padding: '8px 4px',
+                    minHeight: 44,
+                    lineHeight: 1.3,
+                    borderRadius: 4,
+                    cursor: 'pointer',
+                    border: `1.5px solid ${on ? '#B8933A' : hovered ? 'rgba(255,255,255,.25)' : 'rgba(30,58,47,.2)'}`,
+                    background: on ? '#B8933A' : 'transparent',
+                    color: on ? '#fff' : hovered ? 'rgba(255,255,255,.75)' : '#1E3A2F',
+                    transition: 'background .2s, border-color .2s, color .2s',
+                  }}
+                >
+                  {s.label}
+                </button>
+              )
+            })}
+          </div>
+        </fieldset>
+        )}
 
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
           <div>
@@ -283,9 +258,10 @@ function ProductCard({ p, delay }: { p: Product; delay: number }) {
                 transition: 'color .4s',
               }}
             >
-              From
+              {size.format}
             </div>
             <div
+              aria-live="polite"
               style={{
                 fontFamily: 'Cormorant Garamond, serif',
                 fontSize: 28,
@@ -295,7 +271,7 @@ function ProductCard({ p, delay }: { p: Product; delay: number }) {
                 transition: 'color .4s',
               }}
             >
-              ${p.from}{' '}
+              {cad.format(size.price)}{' '}
               <span style={{ fontFamily: 'DM Mono, monospace', fontSize: 11, fontWeight: 400 }}>
                 CAD
               </span>
@@ -303,10 +279,14 @@ function ProductCard({ p, delay }: { p: Product; delay: number }) {
           </div>
 
           <a
-            href={SHOPIFY}
+            href={link.href}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label={`Shop ${p.title} on Shopify (opens in new tab)`}
+            aria-label={
+              link.soldOut
+                ? `${p.title} ${size.label} is sold out — view it on Shopify (opens in a new tab)`
+                : `${link.label}: ${p.title}, ${size.label} ${size.format.toLowerCase()} (opens Shopify in a new tab)`
+            }
             style={{
               display: 'inline-flex',
               alignItems: 'center',
@@ -314,9 +294,11 @@ function ProductCard({ p, delay }: { p: Product; delay: number }) {
               fontFamily: 'Outfit, sans-serif',
               fontSize: 13,
               fontWeight: 700,
-              background: hovered ? '#B8933A' : '#1E3A2F',
-              color: '#fff',
+              background: link.soldOut ? 'transparent' : hovered ? '#B8933A' : '#1E3A2F',
+              border: link.soldOut ? `1.5px solid ${hovered ? 'rgba(255,255,255,.4)' : 'rgba(30,58,47,.3)'}` : '1.5px solid transparent',
+              color: link.soldOut ? (hovered ? 'rgba(255,255,255,.7)' : 'rgba(30,58,47,.6)') : '#fff',
               padding: '12px 20px',
+              minHeight: 44,
               textDecoration: 'none',
               borderRadius: 4,
               transition: 'background .25s, transform .2s',
@@ -329,7 +311,7 @@ function ProductCard({ p, delay }: { p: Product; delay: number }) {
               e.currentTarget.style.transform = 'none'
             }}
           >
-            Add to Cart
+            {link.label}
           </a>
         </div>
       </div>
@@ -454,8 +436,22 @@ export default function Home() {
     setSent(true)
   }
 
+  // #products was the old anchor; keep shared links working but land on #shop.
+  useEffect(() => {
+    if (window.location.hash === '#products') {
+      window.history.replaceState(null, '', '#shop')
+    }
+    const hash = window.location.hash
+    if (hash) {
+      const el = document.querySelector(hash)
+      if (el) requestAnimationFrame(() => el.scrollIntoView({ block: 'start' }))
+    }
+  }, [])
+
+  const classicLink = buyLink(byId('classic-mayo'), 0) // 354 ml squeeze bottle
+
   const NAV: [string, string][] = [
-    ['#products', 'Products'],
+    ['#shop', 'Shop'],
     ['#about', 'About'],
     ['#story', 'Our Story'],
     ['#contact', 'Contact'],
@@ -463,10 +459,13 @@ export default function Home() {
 
   return (
     <main>
-      <style>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400;1,600;1,700&family=Outfit:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
         *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; font-size: 16px; }
+        section[id], #content { scroll-margin-top: 84px; }
+        .cta-short { display: none; }
+        @media (max-width: 900px) { .cta-short { display: inline; } }
         body { background: #F5F0E8; color: #1E3A2F; font-family: Outfit, system-ui, sans-serif; overflow-x: hidden; line-height: 1.6; }
         :focus-visible { outline: 3px solid #B8933A; outline-offset: 3px; border-radius: 3px; }
         ::-webkit-scrollbar { width: 6px; }
@@ -478,6 +477,8 @@ export default function Home() {
         @keyframes marquee { from{transform:translateX(0)} to{transform:translateX(-50%)} }
         @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; } }
         @media (max-width: 1100px) { .four-col { grid-template-columns: 1fr 1fr !important; } }
+        @media (max-width: 1024px) { .product-grid { grid-template-columns: 1fr 1fr !important; } }
+        @media (max-width: 640px) { .product-grid { grid-template-columns: 1fr !important; } }
         @media (max-width: 1024px) {
           .hero-grid { grid-template-columns: 1fr !important; }
           .hero-right { display: none !important; }
@@ -490,11 +491,12 @@ export default function Home() {
           .three-col { grid-template-columns: 1fr !important; }
           .sp { padding: 80px 24px !important; }
           .nav-links { display: none !important; }
+          .cta-long { display: none; }
           .hamburger { display: flex !important; }
           .stat-grid { grid-template-columns: 1fr 1fr !important; }
         }
         @media (max-width: 600px) { .four-col { grid-template-columns: 1fr !important; } }
-      `}</style>
+      ` }} />
 
       <a
         href="#content"
@@ -606,10 +608,7 @@ export default function Home() {
 
           <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
             <a
-              href={SHOPIFY}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Shop now on Shopify (opens in new tab)"
+              href="#shop"
               style={{
                 fontFamily: 'Outfit, sans-serif',
                 fontSize: 14,
@@ -630,7 +629,8 @@ export default function Home() {
                 e.currentTarget.style.transform = 'none'
               }}
             >
-              Shop Now
+              <span className="cta-long">Shop spreads</span>
+              <span className="cta-short">Shop</span>
             </a>
 
             <button
@@ -713,9 +713,7 @@ export default function Home() {
             ))}
 
             <a
-              href={SHOPIFY}
-              target="_blank"
-              rel="noopener noreferrer"
+              href="#shop"
               onClick={() => setMenuOpen(false)}
               style={{
                 marginTop: 16,
@@ -730,7 +728,7 @@ export default function Home() {
                 borderRadius: 4,
               }}
             >
-              Shop Now →
+              Shop spreads →
             </a>
           </div>
         )}
@@ -868,8 +866,8 @@ export default function Home() {
                   animation: 'fadeUp .7s .3s cubic-bezier(.16,1,.3,1) forwards',
                 }}
               >
-                Plant-based spreads crafted in Milton, Ontario using Burcon&apos;s breakthrough pea and canola
-                protein isolates. No eggs, no gums, no compromise.
+                Plant-based mayo, spreads and protein made in Milton, Ontario. Creamy like the real thing &mdash;
+                no eggs, no gums, no compromise.
               </p>
 
               <div
@@ -884,10 +882,7 @@ export default function Home() {
                 }}
               >
                 <a
-                  href={SHOPIFY}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label="Shop all spreads (opens in new tab)"
+                  href="#shop"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -911,7 +906,7 @@ export default function Home() {
                     e.currentTarget.style.transform = 'none'
                   }}
                 >
-                  Shop All Spreads
+                  Shop spreads
                 </a>
 
                 <a
@@ -1137,8 +1132,8 @@ export default function Home() {
           <div className="stat-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', maxWidth: 1280, margin: '0 auto' }}>
             {[
               { val: '100%', label: 'Plant-Based', sub: 'No animal products' },
-              { val: '0', label: 'Artificial Additives', sub: 'Clean label guaranteed' },
-              { val: '4', label: 'Signature Spreads', sub: 'Something for everyone' },
+              { val: 'Zero', label: 'Artificial Additives', sub: 'Clean label guaranteed' },
+              { val: '26.5g', label: 'Protein per Scoop', sub: 'Fava & pea isolates' },
               { val: 'Milton', label: 'Ontario, Canada', sub: 'Proudly made locally' },
             ].map(({ val, label, sub }, i) => (
               <Reveal key={label} delay={i * 70}>
@@ -1175,7 +1170,7 @@ export default function Home() {
           </div>
         </section>
 
-        <section id="products" aria-label="Our product collection" className="sp" style={{ padding: '120px 48px', background: '#F5F0E8' }}>
+        <section id="shop" aria-label="Shop our spreads" className="sp" style={{ padding: '120px 48px', background: '#F5F0E8' }}>
           <div style={{ maxWidth: 1280, margin: '0 auto' }}>
             <Reveal>
               <div style={{ marginBottom: 64 }}>
@@ -1224,9 +1219,9 @@ export default function Home() {
                     marginBottom: 16,
                   }}
                 >
-                  Four spreads.
+                  Creamy spreads.
                   <br />
-                  <em style={{ color: '#B8933A', fontStyle: 'italic' }}>Endless possibilities.</em>
+                  <em style={{ color: '#B8933A', fontStyle: 'italic' }}>Clean protein.</em>
                 </h2>
 
                 <p
@@ -1239,22 +1234,77 @@ export default function Home() {
                     lineHeight: 1.7,
                   }}
                 >
-                  Every product is made with Burcon&apos;s innovative protein isolates — the same creamy indulgence you
-                  love, with ingredients you can actually pronounce.
+                  Every product is built on plant protein isolates &mdash; the same creamy indulgence you love, with
+                  ingredients you can actually pronounce. Pick a size and it goes straight into your Shopify cart.
                 </p>
               </div>
             </Reveal>
 
             <div
-              className="four-col"
+              className="product-grid"
               role="list"
               aria-label="Products"
-              style={{ display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 20 }}
+              style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 20 }}
             >
               {PRODUCTS.map((p, i) => (
                 <ProductCard key={p.id} p={p} delay={i * 100} />
               ))}
             </div>
+
+            <Reveal delay={150}>
+              <div
+                style={{
+                  marginTop: 24,
+                  padding: '20px 24px',
+                  border: '1px dashed rgba(30,58,47,.25)',
+                  borderRadius: 6,
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  alignItems: 'center',
+                  gap: 20,
+                }}
+              >
+                <div style={{ flex: '1 1 220px' }}>
+                  <div
+                    style={{
+                      fontFamily: 'DM Mono, monospace',
+                      fontSize: 10,
+                      letterSpacing: '.18em',
+                      textTransform: 'uppercase',
+                      color: '#B8933A',
+                      marginBottom: 4,
+                      fontWeight: 500,
+                    }}
+                  >
+                    Coming soon
+                  </div>
+                  <p style={{ fontFamily: 'Outfit, sans-serif', fontSize: 14, color: '#3D2E1A', lineHeight: 1.6 }}>
+                    Two more spreads are on the way.{' '}
+                    <a href="#contact" style={{ color: '#1E3A2F', fontWeight: 600 }}>
+                      Ask us
+                    </a>{' '}
+                    about availability or wholesale.
+                  </p>
+                </div>
+                <ul role="list" aria-label="Coming soon" style={{ display: 'flex', flexWrap: 'wrap', gap: 16, listStyle: 'none', padding: 0 }}>
+                  {COMING_SOON.map((c) => (
+                    <li key={c.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                      <img
+                        src={c.img}
+                        alt={c.imgAlt}
+                        width={56}
+                        height={56}
+                        style={{ width: 56, height: 56, objectFit: 'cover', objectPosition: 'center top', borderRadius: 6, background: '#F0EBE0' }}
+                      />
+                      <div>
+                        <div style={{ fontFamily: 'Cormorant Garamond, serif', fontSize: 20, fontWeight: 700, color: '#1E3A2F', lineHeight: 1.1 }}>{c.title}</div>
+                        <div style={{ fontFamily: 'Outfit, sans-serif', fontSize: 12, color: '#4A3728' }}>{c.subtitle}</div>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </Reveal>
 
             <Reveal delay={200}>
               <div style={{ textAlign: 'center', marginTop: 48 }}>
@@ -1262,7 +1312,7 @@ export default function Home() {
                   href={SHOPIFY}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label="View all products (opens in new tab)"
+                  aria-label="Visit our Shopify store (opens in new tab)"
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -1286,7 +1336,7 @@ export default function Home() {
                     e.currentTarget.style.color = '#1E3A2F'
                   }}
                 >
-                  View All Products →
+                  Visit our Shopify store →
                 </a>
               </div>
             </Reveal>
@@ -1616,7 +1666,7 @@ export default function Home() {
                     'No eggs, no gums, no artificial additives — just honest ingredients',
                     "Rich, creamy texture powered by Burcon's Peazazz C and Puratein C",
                     'Allergen-friendly, preservative-free, and fully plant-based',
-                    'Available in 354ml squeeze bottle, 500ml mason jar, and 4L tub',
+                    '354 ml squeeze bottle online — 500 ml jar available on request',
                   ].map((t) => (
                     <li
                       key={t}
@@ -1656,10 +1706,10 @@ export default function Home() {
 
                 <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap' }}>
                   <a
-                    href={SHOPIFY}
+                    href={classicLink.href}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label="Order Classic Mayo (opens in new tab)"
+                    aria-label={`${classicLink.label}: Classic Mayo, 354 ml squeeze bottle (opens Shopify in a new tab)`}
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -1683,11 +1733,11 @@ export default function Home() {
                       e.currentTarget.style.transform = 'none'
                     }}
                   >
-                    Order Now →
+                    {classicLink.adds ? 'Add Classic Mayo to cart' : 'Order Classic Mayo'} →
                   </a>
 
                   <a
-                    href="#products"
+                    href="#shop"
                     style={{
                       display: 'inline-flex',
                       alignItems: 'center',
@@ -1795,8 +1845,8 @@ export default function Home() {
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 28 }}>
                   {[
                     { icon: '📍', label: 'Location', val: '201 Main St E, Milton, ON, Canada', href: undefined },
-                    { icon: '🌐', label: 'Main Website', val: 'naturescreamery.com', href: 'https://naturescreamery.com' },
-                    { icon: '🛒', label: 'Shop Online', val: 'natures-creamery.myshopify.com', href: SHOPIFY },
+                    { icon: '🌐', label: 'Website', val: 'www.naturescreamery.com', href: SITE_URL },
+                    { icon: '🛒', label: 'Shop', val: 'Browse and order our spreads', href: '#shop' },
                   ].map(({ icon, label, val, href }) => (
                     <div key={label} style={{ display: 'flex', alignItems: 'flex-start', gap: 16 }}>
                       <div
@@ -1832,8 +1882,7 @@ export default function Home() {
                         {href ? (
                           <a
                             href={href}
-                            target="_blank"
-                            rel="noopener noreferrer"
+                            {...(href.startsWith('http') ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
                             style={{
                               fontFamily: 'Outfit, sans-serif',
                               fontSize: 14,
@@ -2157,10 +2206,8 @@ export default function Home() {
                 Shop
               </div>
               <a
-                href={SHOPIFY}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Shop all products (opens in new tab)"
+                href="#shop"
+                aria-label="Shop our spreads"
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -2182,7 +2229,7 @@ export default function Home() {
                   e.currentTarget.style.background = '#B8933A'
                 }}
               >
-                Shop All Products →
+                Shop spreads →
               </a>
             </div>
           </div>
